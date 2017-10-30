@@ -1,0 +1,7 @@
+{
+  "name": "WebGL_Guide_Code",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "serve -p 3000"
+  }
+}
