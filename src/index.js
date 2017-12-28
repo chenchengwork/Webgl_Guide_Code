@@ -1,19 +1,27 @@
-// HelloPoint1.js (c) 2012 matsuda
-// Vertex shader program
-var VSHADER_SOURCE =
-    'attribute vec4 a_Position;\n' +
-    'void main() {\n' +
-    '  gl_Position = a_Position;\n' + // 设置顶点着色器的位置
-    '  gl_PointSize = 10.0;\n' +                    // 设置点的大小
-    '}\n';
+import {
+    getWebGLContext,
+    initShaders
+} from './core/cuon-utils';
 
-// Fragment shader program
-var FSHADER_SOURCE =
-    'precision mediump float;\n'+
-    'uniform vec4 u_FragColor;\n' +
-    'void main() {\n' +
-    '  gl_FragColor = u_FragColor;\n' + // 设置片元着色器颜色
-    '}\n';
+
+var VSHADER_SOURCE =`
+    attribute vec4 a_Position;
+    void main() {
+        // 设置顶点着色器的位置
+        gl_Position = a_Position; 
+        // 设置点的大小
+        gl_PointSize = 10.0;
+    }
+`;
+
+var FSHADER_SOURCE =`
+    precision mediump float;
+    uniform vec4 u_FragColor; 
+    void main() { 
+        // 设置片元着色器颜色
+        gl_FragColor = u_FragColor;
+    }
+`;
 
 function main() {
     // Retrieve <canvas> element
@@ -26,12 +34,11 @@ function main() {
         return;
     }
 
-    // Initialize shaders
+    // 初始化着色器
     if (!initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE)) {
         console.log('Failed to intialize shaders.');
         return;
     }
-
 
     // 获取attribute变量的存储位置
     var a_Position = gl.getAttribLocation(gl.program, 'a_Position');
@@ -42,8 +49,8 @@ function main() {
     }
 
     // 将顶点位置传给顶点变量
-    // gl.vertexAttrib3f(a_Position, 0.0, 0.0, 0.0);
-    gl.vertexAttrib3fv(a_Position, new Float32Array(0.0, 0.0, 0.0)); // 矢量版函数
+    // gl.vertexAttrib3f(a_Position, 0.0, 0.0, 0.0);                    // 非矢量方法
+    gl.vertexAttrib3fv(a_Position, new Float32Array(0.0, 0.0, 0.0));    // 矢量版函数
 
 
     // 获取uniform变量的存储位置
@@ -66,3 +73,6 @@ function main() {
     // Draw a point
     gl.drawArrays(gl.POINTS, 0, 1);
 }
+
+// 入口文件
+main();
