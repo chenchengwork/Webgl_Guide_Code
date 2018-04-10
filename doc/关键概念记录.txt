@@ -77,13 +77,13 @@
     2.gl.drawArrays(mode, first, count) // 绘制
         参数说明:
             mode: 绘制方式(常量)
-                    gl.POINTS,
-                    gl.LINES,
-                    gl.LINES_STRIP,
-                    gl.LINES_LOOP,
-                    gl.TRIANGLES,
-                    gl.TRIANGLE_STRIP,
-                    gl.TRIANGLE_FAN,
+                    gl.POINTS,      // 一系列点
+                    gl.LINES,       // 一系列单独的线段
+                    gl.LINES_STRIP, // 一系列连接的线段
+                    gl.LINES_LOOP,  // 一系列连接的线段, 最后的点和起始点连接在一起
+                    gl.TRIANGLES,   // 一系列单独的三角形
+                    gl.TRIANGLE_STRIP, // 一系列连接的三角形
+                    gl.TRIANGLE_FAN,    // 一系列三角形组成的扇形
 
             first: 指定从哪个顶点开始绘制
 

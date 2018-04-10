@@ -15,6 +15,7 @@ export function initShaders(gl, vshader, fshader) {
         return false;
     }
 
+    // webgl使用该编程对象
     gl.useProgram(program);
     gl.program = program;
 
@@ -29,7 +30,7 @@ export function initShaders(gl, vshader, fshader) {
  * @return created program object, or null if the creation has failed
  */
 export function createProgram(gl, vshader, fshader) {
-    // Create shader object
+    // 创建着色器对象
     var vertexShader = loadShader(gl, gl.VERTEX_SHADER, vshader);
     var fragmentShader = loadShader(gl, gl.FRAGMENT_SHADER, fshader);
     if (!vertexShader || !fragmentShader) {
@@ -42,14 +43,14 @@ export function createProgram(gl, vshader, fshader) {
         return null;
     }
 
-    // Attach the shader objects
+    // 绑定着色器对象到编程对象上
     gl.attachShader(program, vertexShader);
     gl.attachShader(program, fragmentShader);
 
-    // Link the program object
+    // 关联编程对象到gl中
     gl.linkProgram(program);
 
-    // Check the result of linking
+    // 检查关联结果
     var linked = gl.getProgramParameter(program, gl.LINK_STATUS);
     if (!linked) {
         var error = gl.getProgramInfoLog(program);
@@ -59,6 +60,7 @@ export function createProgram(gl, vshader, fshader) {
         gl.deleteShader(vertexShader);
         return null;
     }
+
     return program;
 }
 
@@ -70,20 +72,20 @@ export function createProgram(gl, vshader, fshader) {
  * @return created shader object, or null if the creation has failed.
  */
 export function loadShader(gl, type, source) {
-    // Create shader object
+    // 创建着色器对象
     var shader = gl.createShader(type);
     if (shader == null) {
         console.log('unable to create shader');
         return null;
     }
 
-    // Set the shader program
+    // 将glsl编程绑定到着色器对象上
     gl.shaderSource(shader, source);
 
-    // Compile the shader
+    // 编译着色器
     gl.compileShader(shader);
 
-    // Check the result of compilation
+    // 检查编译结果
     var compiled = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
     if (!compiled) {
         var error = gl.getShaderInfoLog(shader);
