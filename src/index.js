@@ -1,4 +1,5 @@
 import texture from './texture';
+import LookAtTrianglesWithKeys from './LookAtTrianglesWithKeys';
 
 import {
     getWebGLContext,
@@ -195,3 +196,5 @@ function animate(angle) {
 main();
 
 texture();
+
+LookAtTrianglesWithKeys();
