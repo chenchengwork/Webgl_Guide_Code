@@ -92,18 +92,31 @@
     . gl.getAttribLocation(gl.program, attribute变量名称) //获取顶点的存储位置
 
     // 向顶点赋值的同族函数
-    . gl.vertexAttrib1f(顶点的存储位置变量, 0.0)  //向顶点变量赋值
-    . gl.vertexAttrib2f(顶点的存储位置变量, 0.0, 0.0)  //向顶点变量赋值
-    . gl.vertexAttrib3f(顶点的存储位置变量, 0.0, 0.0, 0.0)  //向顶点变量赋值
-    . gl.vertexAttrib4f(顶点的存储位置变量, 0.0, 0.0, 0.0, 1.0)  //向顶点变量赋值
+    gl.vertexAttrib1f(顶点的存储位置变量, 0.0)  //向顶点变量赋值
+    gl.vertexAttrib2f(顶点的存储位置变量, 0.0, 0.0)  //向顶点变量赋值
+    gl.vertexAttrib3f(顶点的存储位置变量, 0.0, 0.0, 0.0)  //向顶点变量赋值
+    gl.vertexAttrib4f(顶点的存储位置变量, 0.0, 0.0, 0.0, 1.0)  //向顶点变量赋值
 
     // 是上述方法的矢量版,函数名称多加了一个v
-    . gl.vertexAttrib1fv(顶点的存储位置变量, new Float32Array(0.0))  //向顶点变量赋值
-    . gl.vertexAttrib2fv(顶点的存储位置变量, new Float32Array(0.0, 0.0))  //向顶点变量赋值
-    . gl.vertexAttrib3fv(顶点的存储位置变量, new Float32Array(0.0, 0.0, 0.0))  //向顶点变量赋值
-    . gl.vertexAttrib4fv(顶点的存储位置变量, new Float32Array(0.0, 0.0, 0.0, 1.0))  //向顶点变量赋值
+    gl.vertexAttrib1fv(顶点的存储位置变量, new Float32Array(0.0))  //向顶点变量赋值
+    gl.vertexAttrib2fv(顶点的存储位置变量, new Float32Array(0.0, 0.0))  //向顶点变量赋值
+    gl.vertexAttrib3fv(顶点的存储位置变量, new Float32Array(0.0, 0.0, 0.0))  //向顶点变量赋值
+    gl.vertexAttrib4fv(顶点的存储位置变量, new Float32Array(0.0, 0.0, 0.0, 1.0))  //向顶点变量赋值
 
 
     3. webgl坐标系中的范围: 0 ~ 1
 
     4. gl.program -> 程序对象
+
+
+四、变换矩阵
+    // 基本矩阵描述：
+
+    1. 旋转矩阵
+    2. 平移矩阵
+    3. 缩放矩阵
+
+    // 复合变换
+
+    例如：经过先"旋转"，再"平移"，得到"复合变换"
+    可以将复合变换，后的矩阵，定义为"模型矩阵"
