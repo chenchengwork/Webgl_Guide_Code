@@ -5,25 +5,27 @@ import {
     initShaders
 } from './core/cuon-utils';
 
-var VSHADER_SOURCE =
-    'attribute vec4 a_Position;\n' +
-    'attribute vec2 a_TexCoord;\n' +
-    'varying vec2 v_TexCoord;\n' +
-    'void main() {\n' +
-    '  gl_Position = a_Position;\n' +
-    '  v_TexCoord = a_TexCoord;\n' +
-    '}\n';
+const VSHADER_SOURCE  = `
+    attribute vec4 a_Position;
+    attribute vec2 a_TexCoord;
+    varying vec2 v_TexCoord;
+    void main() {
+        gl_Position = a_Position;
+        v_TexCoord = a_TexCoord;
+    }
+`;
 
-// Fragment shader program
-var FSHADER_SOURCE =
-    '#ifdef GL_ES\n' +
-    'precision mediump float;\n' +
-    '#endif\n' +
-    'uniform sampler2D u_Sampler;\n' +
-    'varying vec2 v_TexCoord;\n' +
-    'void main() {\n' +
-    '  gl_FragColor = texture2D(u_Sampler, v_TexCoord);\n' +
-    '}\n';
+const FSHADER_SOURCE = `
+    #ifdef GL_ES
+        precision mediump float;
+    #endif
+    
+    uniform sampler2D u_Sampler;
+    varying vec2 v_TexCoord;
+    void main() {
+        gl_FragColor = texture2D(u_Sampler, v_TexCoord);
+    }
+`;
 
 
 export default function texture() {

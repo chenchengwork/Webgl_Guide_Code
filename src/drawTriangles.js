@@ -51,8 +51,8 @@ export default function main() {
 	}
 
 	// 给顶点传入颜色
-	const a_Color = gl.getAttribLocation(gl.program, 'a_Color');
-	gl.vertexAttrib3f(a_Color, 0.0, 1.0, 0.0);
+	// const a_Color = gl.getAttribLocation(gl.program, 'a_Color');
+	// gl.vertexAttrib3f(a_Color, 0.0, 1.0, 0.0);
 
 	// 传入缩放变换矩阵
 	const u_xformMatrix = gl.getUniformLocation(gl.program, 'u_xformMatrix');
@@ -78,10 +78,14 @@ export default function main() {
 
 const initVertexBuffers = (gl) => {
 	const vertices = new Float32Array([
-		0.0, 0.5,   -0.5, -0.5,   0.5, -0.5
+		0.0, 0.5,  1.0, 0.0, 0.0,
+		-0.5, -0.5, 0.0, 1.0, 0.0,
+		0.5, -0.5,	0.0, 0.0, 1.0
 	]);
 
 	const n = 3;
+
+	const FSIZE = vertices.BYTES_PER_ELEMENT;
 
 	// 创建缓冲区对象
 	const vertexBuffer = gl.createBuffer();
@@ -91,7 +95,7 @@ const initVertexBuffers = (gl) => {
 	// 向缓冲区对象写入数据
 	gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
 
-	// 获取顶点的位置
+	//---- 获取顶点的位置 -----
 	const a_Position = gl.getAttribLocation(gl.program, 'a_Position');
 	if (a_Position < 0) {
 		console.log('Failed to get the storage location of a_Position');
@@ -99,9 +103,22 @@ const initVertexBuffers = (gl) => {
 	}
 
 	// 将缓冲区对象分配给a_Position变量
-	gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
+	gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, FSIZE * 5, 0);
 	// 连接a_Position变量与分配给它的缓冲区对象
 	gl.enableVertexAttribArray(a_Position);
+
+
+	//---- 获取颜色的位置 -----
+	const a_Color = gl.getAttribLocation(gl.program, 'a_Color');
+	if (a_Color < 0) {
+		console.log('Failed to get the storage location of a_Color');
+		return false;
+	}
+	gl.vertexAttribPointer(a_Color, 3, gl.FLOAT, false, FSIZE * 5, FSIZE * 2);
+	gl.enableVertexAttribArray(a_Color);
+
+	// Unbind the buffer object
+	gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
 	return n;
 }
