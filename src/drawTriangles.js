@@ -8,13 +8,16 @@ import {
 	initShaders
 } from './core/cuon-utils';
 
+import { Matrix4 } from './core/cuon-matrix';
+
 const VSHADER_SOURCE = `
 	attribute vec4 a_Position;
 	attribute vec4 a_Color;
-	uniform mat4 u_xformMatrix;
+	uniform mat4 u_xformMatrix;	// 缩放矩阵 
+	uniform mat4 u_ViewMatrix;	// 视图矩阵
 	varying vec4 v_Color;
 	void main(){
-		gl_Position = u_xformMatrix * a_Position;
+		gl_Position = u_ViewMatrix * u_xformMatrix * a_Position;
 		v_Color = a_Color;
 	}
 `;
@@ -62,6 +65,12 @@ export default function main() {
 		0.0, 0.0, 1.0, 0.0,
 		0.0, 0.0, 0.0, 1.0,
 	]));
+
+	// 传入视图矩阵
+	const viewMatrix = new Matrix4();
+	viewMatrix.lookAt(0.20, 0.25, 0.25, 0,0,0, 0,1,0);
+	const u_ViewMatrix = gl.getUniformLocation(gl.program, 'u_ViewMatrix');
+	gl.uniformMatrix4fv(u_ViewMatrix, false, viewMatrix.elements)
 
 	//------------绑定着色器顶点和颜色-> end-------------
 
