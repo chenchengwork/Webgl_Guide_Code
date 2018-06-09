@@ -17,7 +17,8 @@ const VSHADER_SOURCE = `
 	uniform mat4 u_ViewMatrix;	// 视图矩阵
 	varying vec4 v_Color;
 	void main(){
-		gl_Position = u_ViewMatrix * u_xformMatrix * a_Position;
+		// gl_Position = u_ViewMatrix * u_xformMatrix * a_Position;
+		gl_Position =  a_Position;
 		v_Color = a_Color;
 	}
 `;
@@ -58,19 +59,19 @@ export default function main() {
 	// gl.vertexAttrib3f(a_Color, 0.0, 1.0, 0.0);
 
 	// 传入缩放变换矩阵
-	const u_xformMatrix = gl.getUniformLocation(gl.program, 'u_xformMatrix');
-	gl.uniformMatrix4fv(u_xformMatrix, false, new Float32Array([
-		1.0, 0.0, 0.0, 0.0,
-		0.0, 1.5, 0.0, 0.0,
-		0.0, 0.0, 1.0, 0.0,
-		0.0, 0.0, 0.0, 1.0,
-	]));
-
-	// 传入视图矩阵
-	const viewMatrix = new Matrix4();
-	viewMatrix.lookAt(0.20, 0.25, 0.25, 0,0,0, 0,1,0);
-	const u_ViewMatrix = gl.getUniformLocation(gl.program, 'u_ViewMatrix');
-	gl.uniformMatrix4fv(u_ViewMatrix, false, viewMatrix.elements)
+	// const u_xformMatrix = gl.getUniformLocation(gl.program, 'u_xformMatrix');
+	// gl.uniformMatrix4fv(u_xformMatrix, false, new Float32Array([
+	// 	1.0, 0.0, 0.0, 0.0,
+	// 	0.0, 1.5, 0.0, 0.0,
+	// 	0.0, 0.0, 1.0, 0.0,
+	// 	0.0, 0.0, 0.0, 1.0,
+	// ]));
+    //
+	// // 传入视图矩阵
+	// const viewMatrix = new Matrix4();
+	// viewMatrix.lookAt(0.20, 0.25, 0.25, 0,0,0, 0,1,0);
+	// const u_ViewMatrix = gl.getUniformLocation(gl.program, 'u_ViewMatrix');
+	// gl.uniformMatrix4fv(u_ViewMatrix, false, viewMatrix.elements)
 
 	//------------绑定着色器顶点和颜色-> end-------------
 

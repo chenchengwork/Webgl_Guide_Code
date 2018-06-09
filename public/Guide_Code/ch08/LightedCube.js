@@ -1,8 +1,8 @@
 // LightedCube.js (c) 2012 matsuda
 // Vertex shader program
-var VSHADER_SOURCE = 
-  'attribute vec4 a_Position;\n' + 
-  'attribute vec4 a_Color;\n' + 
+var VSHADER_SOURCE =
+  'attribute vec4 a_Position;\n' +
+  'attribute vec4 a_Color;\n' +
   'attribute vec4 a_Normal;\n' +        // Normal
   'uniform mat4 u_MvpMatrix;\n' +
   'uniform vec3 u_LightColor;\n' +     // Light color
@@ -20,7 +20,7 @@ var VSHADER_SOURCE =
   '}\n';
 
 // Fragment shader program
-var FSHADER_SOURCE = 
+var FSHADER_SOURCE =
   '#ifdef GL_ES\n' +
   'precision mediump float;\n' +
   '#endif\n' +
@@ -61,7 +61,7 @@ function main() {
   var u_MvpMatrix = gl.getUniformLocation(gl.program, 'u_MvpMatrix');
   var u_LightColor = gl.getUniformLocation(gl.program, 'u_LightColor');
   var u_LightDirection = gl.getUniformLocation(gl.program, 'u_LightDirection');
-  if (!u_MvpMatrix || !u_LightColor || !u_LightDirection) { 
+  if (!u_MvpMatrix || !u_LightColor || !u_LightDirection) {
     console.log('Failed to get the storage location');
     return;
   }
