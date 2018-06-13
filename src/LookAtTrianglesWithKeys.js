@@ -3,7 +3,7 @@ import {
 	initShaders
 } from './core/cuon-utils'
 
-import { Matrix4 } from './core/cuon-matrix';
+import GlMatrix from './core/my-matrix';
 
 const VSHADER_SOURCE = `
 	attribute vec4 a_Position;
@@ -18,7 +18,7 @@ const VSHADER_SOURCE = `
 
 const FSHADER_SOURCE = `
 	#ifdef GL_ES
-	precision mediump float;
+	precision mediump float;	// float指定精度
 	#endif
 	
 	varying vec4 v_Color;
@@ -56,10 +56,9 @@ export default function LookAtTrianglesWithKeys(){
 		return;
 	}
 
-	const viewMatrix = new Matrix4();
-	document.onkeydown = function(ev){ keydown(ev, gl, n, u_ViewMatrix, viewMatrix); };
+	document.onkeydown = function(ev){ keydown(ev, gl, n, u_ViewMatrix); };
 
-	draw(gl, n, u_ViewMatrix, viewMatrix);   // Draw
+	draw(gl, n, u_ViewMatrix);   // Draw
 
 }
 
@@ -70,6 +69,11 @@ const initVertexBuffers = (gl) => {
 		-0.5, -0.5,  -0.4,  0.4,  1.0,  0.4,
 		0.5, -0.5,  -0.4,  1.0,  0.4,  0.4,
 
+        // 0.0,  1.0,  0.0,  0.4,  1.0,  0.4, // The back green one
+        // -1.0, -1.0,  -0.0,  0.4,  1.0,  0.4,
+        // 1.0, -1.0,  -0.0,  1.0,  0.4,  0.4,
+
+
 		0.5,  0.4,  -0.2,  1.0,  0.4,  0.4, // The middle yellow one
 		-0.5,  0.4,  -0.2,  1.0,  1.0,  0.4,
 		0.0, -0.6,  -0.2,  1.0,  1.0,  0.4,
@@ -77,7 +81,7 @@ const initVertexBuffers = (gl) => {
 		0.0,  0.5,   0.0,  0.4,  0.4,  1.0,  // The front blue one
 		-0.5, -0.5,   0.0,  0.4,  0.4,  1.0,
 		0.5, -0.5,   0.0,  1.0,  0.4,  0.4,
-	])
+	]);
 
 	var n = 9;
 
@@ -117,22 +121,21 @@ const initVertexBuffers = (gl) => {
 
 
 let g_eyeX = 0.20, g_eyeY = 0.25, g_eyeZ = 0.25; // Eye position
-function keydown(ev, gl, n, u_ViewMatrix, viewMatrix) {
+function keydown(ev, gl, n, u_ViewMatrix) {
 	if(ev.keyCode == 39) { // The right arrow key was pressed
 		g_eyeX += 0.01;
 	} else
 	if (ev.keyCode == 37) { // The left arrow key was pressed
 		g_eyeX -= 0.01;
 	} else { return; }
-	draw(gl, n, u_ViewMatrix, viewMatrix);
+	draw(gl, n, u_ViewMatrix);
 }
 
-function draw(gl, n, u_ViewMatrix, viewMatrix) {
-	// Set the matrix to be used for to set the camera view
-	viewMatrix.setLookAt(g_eyeX, g_eyeY, g_eyeZ, 0, 0, 0, 0, 1, 0);
-
-	// Pass the view projection matrix
-	gl.uniformMatrix4fv(u_ViewMatrix, false, viewMatrix.elements);
+function draw(gl, n, u_ViewMatrix) {
+	// 获取相机实视图
+	const cameraView = GlMatrix.getLookAtMatrix([g_eyeX, g_eyeY, g_eyeZ], [0, 0, 0], [0, 1, 0]);
+	console.log(cameraView);
+	gl.uniformMatrix4fv(u_ViewMatrix, false, cameraView);
 
 	gl.clear(gl.COLOR_BUFFER_BIT);     // Clear <canvas>
 

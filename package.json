@@ -7,7 +7,9 @@
   "scripts": {
     "dev": "BUILD_DEV=1 node server.js"
   },
-  "dependencies": {},
+  "dependencies": {
+    "gl-matrix": "^2.6.1"
+  },
   "devDependencies": {
     "autoprefixer": "^7.1.6",
     "babel-cli": "^6.26.0",
