@@ -1,17 +1,11 @@
-import {
-	getWebGLContext,
-	initShaders
-} from './core/cuon-utils'
-
-import GlMatrix from './core/my-matrix';
+import GL_Util from './myCore/GL_Util';
 
 const VSHADER_SOURCE = `
 	attribute vec4 a_Position;
 	attribute vec4 a_Color;
-	uniform mat4 u_ViewMatrix;
 	varying vec4 v_Color;
 	void main(){
-		gl_Position = u_ViewMatrix * a_Position;
+		gl_Position =  a_Position;
 		v_Color = a_Color;
 	}
 `;
@@ -28,21 +22,12 @@ const FSHADER_SOURCE = `
 `;
 
 export default function LookAtTrianglesWithKeys(){
-	const canvas = document.querySelector("#webgl-LookAtTrianglesWithKeys");
-
-	const gl = getWebGLContext(canvas);
-	if (!gl) {
-		console.log('Failed to get the rendering context for WebGL');
-		return;
-	}
-
-	if(!initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE)){
-		console.log('Failed to intialize shaders.');
-		return;
-	}
+	const gl_util = new GL_Util('webgl');
+	const gl = gl_util.getWebGLContext();
+	const glProgram = gl_util.getGlProgram(gl, VSHADER_SOURCE, FSHADER_SOURCE);
 
 	// Set the vertex coordinates and color (the blue triangle is in the front)
-	const n = initVertexBuffers(gl);
+	const n = initVertexBuffers(gl, glProgram);
 	if (n < 0) {
 		console.log('Failed to set the vertex information');
 		return;
@@ -50,40 +35,40 @@ export default function LookAtTrianglesWithKeys(){
 
 	gl.clearColor(0, 0, 0, 1);
 
-	const u_ViewMatrix = gl.getUniformLocation(gl.program, 'u_ViewMatrix');
-	if(!u_ViewMatrix) {
-		console.log('Failed to get the storage locations of u_ViewMatrix');
-		return;
-	}
+	// const u_ViewMatrix = gl.getUniformLocation(gl.program, 'u_ViewMatrix');
+	// if(!u_ViewMatrix) {
+	// 	console.log('Failed to get the storage locations of u_ViewMatrix');
+	// 	return;
+	// }
 
-	document.onkeydown = function(ev){ keydown(ev, gl, n, u_ViewMatrix); };
+	document.onkeydown = function(ev){ keydown(ev, gl, n); };
 
-	draw(gl, n, u_ViewMatrix);   // Draw
+	draw(gl, n);   // Draw
 
 }
 
-const initVertexBuffers = (gl) => {
+const initVertexBuffers = (gl, glProgram) => {
 	const verticesColors = new Float32Array([
 		// Vertex coordinates and color
-		0.0,  0.5,  -0.4,  0.4,  1.0,  0.4, // The back green one
-		-0.5, -0.5,  -0.4,  0.4,  1.0,  0.4,
-		0.5, -0.5,  -0.4,  1.0,  0.4,  0.4,
+		// 0.0,  0.5,  -0.4,  0.4,  1.0,  0.4, // The back green one
+		// -0.5, -0.5,  -0.4,  0.4,  1.0,  0.4,
+		// 0.5, -0.5,  -0.4,  1.0,  0.4,  0.4,
 
-        // 0.0,  1.0,  0.0,  0.4,  1.0,  0.4, // The back green one
-        // -1.0, -1.0,  -0.0,  0.4,  1.0,  0.4,
-        // 1.0, -1.0,  -0.0,  1.0,  0.4,  0.4,
+        0.0,  1.0,  0.0,  0.4,  1.0,  0.4, // The back green one
+        -1.0, -1.0,  -0.0,  0.4,  1.0,  0.4,
+        1.0, -1.0,  -0.0,  1.0,  0.4,  0.4,
 
 
-		0.5,  0.4,  -0.2,  1.0,  0.4,  0.4, // The middle yellow one
-		-0.5,  0.4,  -0.2,  1.0,  1.0,  0.4,
-		0.0, -0.6,  -0.2,  1.0,  1.0,  0.4,
-
-		0.0,  0.5,   0.0,  0.4,  0.4,  1.0,  // The front blue one
-		-0.5, -0.5,   0.0,  0.4,  0.4,  1.0,
-		0.5, -0.5,   0.0,  1.0,  0.4,  0.4,
+		// 0.5,  0.4,  -0.2,  1.0,  0.4,  0.4, // The middle yellow one
+		// -0.5,  0.4,  -0.2,  1.0,  1.0,  0.4,
+		// 0.0, -0.6,  -0.2,  1.0,  1.0,  0.4,
+        //
+		// 0.0,  0.5,   0.0,  0.4,  0.4,  1.0,  // The front blue one
+		// -0.5, -0.5,   0.0,  0.4,  0.4,  1.0,
+		// 0.5, -0.5,   0.0,  1.0,  0.4,  0.4,
 	]);
 
-	var n = 9;
+	var n = 3;
 
 	const vertexColorbuffer = gl.createBuffer();
 
@@ -97,7 +82,7 @@ const initVertexBuffers = (gl) => {
 
 	const FSIZE = verticesColors.BYTES_PER_ELEMENT;
 
-	const a_Position = gl.getAttribLocation(gl.program, 'a_Position');
+	const a_Position = gl.getAttribLocation(glProgram, 'a_Position');
 	if(a_Position < 0) {
 		console.log('Failed to get the storage location of a_Position');
 		return -1;
@@ -107,7 +92,7 @@ const initVertexBuffers = (gl) => {
 	gl.enableVertexAttribArray(a_Position);
 
 
-	const a_Color = gl.getAttribLocation(gl.program, 'a_Color');
+	const a_Color = gl.getAttribLocation(glProgram, 'a_Color');
 	if(a_Position < 0) {
 		console.log('Failed to get the storage location of a_Position');
 		return -1;
@@ -121,21 +106,20 @@ const initVertexBuffers = (gl) => {
 
 
 let g_eyeX = 0.20, g_eyeY = 0.25, g_eyeZ = 0.25; // Eye position
-function keydown(ev, gl, n, u_ViewMatrix) {
+function keydown(ev, gl, n) {
 	if(ev.keyCode == 39) { // The right arrow key was pressed
 		g_eyeX += 0.01;
 	} else
 	if (ev.keyCode == 37) { // The left arrow key was pressed
 		g_eyeX -= 0.01;
 	} else { return; }
-	draw(gl, n, u_ViewMatrix);
+	draw(gl, n);
 }
 
 function draw(gl, n, u_ViewMatrix) {
 	// 获取相机实视图
-	const cameraView = GlMatrix.getLookAtMatrix([g_eyeX, g_eyeY, g_eyeZ], [0, 0, 0], [0, 1, 0]);
-	console.log(cameraView);
-	gl.uniformMatrix4fv(u_ViewMatrix, false, cameraView);
+	// const cameraView = GlMatrix.getLookAtMatrix([g_eyeX, g_eyeY, g_eyeZ], [0, 0, 0], [0, 1, 0]);
+	// gl.uniformMatrix4fv(u_ViewMatrix, false, cameraView);
 
 	gl.clear(gl.COLOR_BUFFER_BIT);     // Clear <canvas>
 

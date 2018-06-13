@@ -8,7 +8,6 @@ import {
 	initShaders
 } from './core/cuon-utils';
 
-import { Matrix4 } from './core/cuon-matrix';
 
 const VSHADER_SOURCE = `
 	attribute vec4 a_Position;
@@ -35,7 +34,7 @@ const FSHADER_SOURCE = `
 `;
 
 export default function main() {
-	const gl = getWebGLContext(document.querySelector('#drawTriangles'));
+	const gl = getWebGLContext(document.querySelector('#webgl'));
 
 	if (!gl) {
 		console.log('初始化webGL上下文失败');

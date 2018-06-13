@@ -30,7 +30,7 @@ const FSHADER_SOURCE = `
 
 export default function texture() {
     // Retrieve <canvas> element
-    var canvas = document.getElementById('webgl-texture');
+    var canvas = document.querySelector('#webgl');
 
     // Get the rendering context for WebGL
     var gl = getWebGLContext(canvas);
