@@ -21,7 +21,7 @@ var VSHADER_SOURCE =
      // Calculate the color due to ambient reflection
   '  vec3 ambient = u_AmbientLight * a_Color.rgb;\n' +
      // Add the surface colors due to diffuse reflection and ambient reflection
-  '  v_Color = vec4(diffuse + ambient, a_Color.a);\n' + 
+  '  v_Color = vec4(diffuse + ambient, a_Color.a);\n' +
   '}\n';
 
 // Fragment shader program
@@ -51,7 +51,7 @@ function main() {
     return;
   }
 
-  // 
+  //
   var n = initVertexBuffers(gl);
   if (n < 0) {
     console.log('Failed to set the vertex information');
@@ -68,7 +68,7 @@ function main() {
   var u_LightColor = gl.getUniformLocation(gl.program, 'u_LightColor');
   var u_LightDirection = gl.getUniformLocation(gl.program, 'u_LightDirection');
   var u_AmbientLight = gl.getUniformLocation(gl.program, 'u_AmbientLight');
-  if (!u_MvpMatrix || !u_NormalMatrix || !u_LightColor || !u_LightDirection || !u_AmbientLight) { 
+  if (!u_MvpMatrix || !u_NormalMatrix || !u_LightColor || !u_LightDirection || !u_AmbientLight) {
     console.log('Failed to get the storage location');
     return;
   }
@@ -88,11 +88,14 @@ function main() {
 
   // Calculate the model matrix
   modelMatrix.setTranslate(0, 0.9, 0); // Translate to the y-axis direction
+
   modelMatrix.rotate(90, 0, 0, 1);     // Rotate 90 degree around the z-axis
   // Calculate the view projection matrix
   mvpMatrix.setPerspective(30, canvas.width/canvas.height, 1, 100);
   mvpMatrix.lookAt(3, 3, 7, 0, 0, 0, 0, 1, 0);
+
   mvpMatrix.multiply(modelMatrix);
+
   // Pass the model view projection matrix to u_MvpMatrix
   gl.uniformMatrix4fv(u_MvpMatrix, false, mvpMatrix.elements);
 

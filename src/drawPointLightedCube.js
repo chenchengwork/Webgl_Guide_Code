@@ -1,5 +1,5 @@
 /**
- * 绘制带有平行光照的cube
+ * 绘制带有点光照的cube
  */
 
 import GL_Util from './myCore/GL_Util';
@@ -9,18 +9,35 @@ const v_sharder = `
     attribute vec4 a_Color;
     attribute vec4 a_Normal;
     uniform mat4 u_MvpMatrix;
+    uniform mat4 u_ModelMatrix;
     uniform mat4 u_NormalMatrix;    // 转变法向量的矩阵
     uniform vec3 u_LightColor;
     uniform vec3 u_AmbientLight;
-    uniform vec3 u_LightDirection;
+    uniform vec3 u_LightPosition;
     varying vec4 v_Color;
     
     void main(){
         gl_Position = u_MvpMatrix * a_Position;
+        
+        // 法向量方向 = 法向量矩阵 * 顶点法向量方向
         vec3 normal = normalize(vec3(u_NormalMatrix * a_Normal));
-        float nDotL = max(dot(u_LightDirection, normal), 0.0);
+        
+        // 获取顶点的世界坐标系位置
+        vec4 vertexPosition = u_ModelMatrix * a_Position;
+        
+        // 光线方向 = 点光源的位置 - 顶点的位置
+        vec3 lightDirection = normalize(u_LightPosition - vec3(vertexPosition));
+        
+        // 通过光线方向和法向量的“点积”，得到cos(入射角)的值
+        float nDotL = max(dot(lightDirection, normal), 0.0);
+        
+        // 漫反射光颜色 = 光照颜色 * 表面基色 * cos(入射角)
         vec3 diffuse = u_LightColor * a_Color.rgb * nDotL;
+        
+        // 环境反射光颜色 = 环境光颜色 * 表面基色
         vec3 ambient = u_AmbientLight * a_Color.rgb;
+        
+        // 最终颜色 = 漫反射光颜色 + 环境反射光颜色
         v_Color = vec4(diffuse + ambient, a_Color.a);
     }
 `;
@@ -69,20 +86,21 @@ function draw(gl, n) {
  */
 function initUniformBuffers(gl, glProgram, canvas) {
     const u_MvpMatrix = gl.getUniformLocation(glProgram, 'u_MvpMatrix');
+    const u_ModelMatrix = gl.getUniformLocation(glProgram, 'u_ModelMatrix');
     const u_NormalMatrix = gl.getUniformLocation(glProgram, 'u_NormalMatrix');
     const u_LightColor = gl.getUniformLocation(glProgram, 'u_LightColor');
-    const u_LightDirection = gl.getUniformLocation(glProgram, 'u_LightDirection');
+    const u_LightPosition = gl.getUniformLocation(glProgram, 'u_LightPosition');
     const u_AmbientLight = gl.getUniformLocation(glProgram, 'u_AmbientLight');
 
-    if (!u_MvpMatrix || !u_LightColor || !u_LightDirection) {
+    if (!u_MvpMatrix || !u_LightColor || !u_LightPosition) {
         throw new Error('Failed to get the storage location');
     }
 
     // 设置光照颜色
     gl.uniform3f(u_LightColor, 1.0, 1.0, 1.0);
 
-    // 设置归一化后的光照方向矢量
-    gl.uniform3fv(u_LightDirection, GlMatrix.getVec3ByNormalize([0.0, 3.0, 4.0]));
+    // 设置点光照位置
+    gl.uniform3f(u_LightPosition, 2.3, 4.0, 3.5);
 
     // 环境光颜色
     gl.uniform3f(u_AmbientLight, 0.2, 0.2, 0.2);
@@ -90,6 +108,9 @@ function initUniformBuffers(gl, glProgram, canvas) {
     // 设置转变法向量的矩阵
     const mMatrix = GlMatrix.mutiplyMat4(GlMatrix.getTranslateMat4([0, 0.9, 0]), GlMatrix.getRotationMat4(90, [0, 0, 1]));
     gl.uniformMatrix4fv(u_NormalMatrix, false, GlMatrix.getInvertTransposeMat4(mMatrix));
+
+    // 设置模型矩阵
+    gl.uniformMatrix4fv(u_ModelMatrix, false, mMatrix);
 
     // 设置mvp矩阵
     const pMatrix = GlMatrix.getPerspectiveMatrix(30, canvas.width/canvas.height, 1, 100);

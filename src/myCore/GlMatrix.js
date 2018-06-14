@@ -94,6 +94,29 @@ export default class GlMatrix {
         return GlMatrix.getTransposeMat4(GlMatrix.getInvertMat4(a));
     }
 
+    /**
+     * 获取移动矩阵
+     * @param {Array} vec3 移动向量
+     * @returns {mat4}
+     */
+    static getTranslateMat4(vec3){
+        const resMat4 = glMatrix.mat4.create();
+        glMatrix.mat4.fromTranslation(resMat4, glMatrix.vec3.fromValues(...vec3));
+        return resMat4;
+    }
+
+    /**
+     * 获取旋转矩阵
+     * @param {Number} angle 移动向量 度数
+     * @param {Array} vec3 旋转轴
+     * @returns {mat4}
+     */
+    static getRotationMat4(angle, vec3){
+        const resMat4 = glMatrix.mat4.create();
+        glMatrix.mat4.fromRotation(resMat4, angle/180 * Math.PI, glMatrix.vec3.fromValues(...vec3));
+        return resMat4;
+    }
+
 
     /**
      * 获取vec3矢量

@@ -1,41 +1,48 @@
 /**
- * 绘制带有平行光照的cube
+ * 绘制带有点光照的cube
  */
 
 import GL_Util from './myCore/GL_Util';
 import GlMatrix from './myCore/GlMatrix';
-const v_sharder = `
-    attribute vec4 a_Position;
-    attribute vec4 a_Color;
-    attribute vec4 a_Normal;
-    uniform mat4 u_MvpMatrix;
-    uniform mat4 u_NormalMatrix;    // 转变法向量的矩阵
-    uniform vec3 u_LightColor;
-    uniform vec3 u_AmbientLight;
-    uniform vec3 u_LightDirection;
-    varying vec4 v_Color;
-    
-    void main(){
-        gl_Position = u_MvpMatrix * a_Position;
-        vec3 normal = normalize(vec3(u_NormalMatrix * a_Normal));
-        float nDotL = max(dot(u_LightDirection, normal), 0.0);
-        vec3 diffuse = u_LightColor * a_Color.rgb * nDotL;
-        vec3 ambient = u_AmbientLight * a_Color.rgb;
-        v_Color = vec4(diffuse + ambient, a_Color.a);
-    }
-`;
+import {Matrix4} from './core/cuon-matrix';
+const v_sharder = 'attribute vec4 a_Position;\n' +
+    'attribute vec4 a_Color;\n' +
+    'attribute vec4 a_Normal;\n' +
+    'uniform mat4 u_MvpMatrix;\n' +
+    'uniform mat4 u_ModelMatrix;\n' +    // Model matrix
+    'uniform mat4 u_NormalMatrix;\n' +   // Transformation matrix of the normal
+    'varying vec4 v_Color;\n' +
+    'varying vec3 v_Normal;\n' +
+    'varying vec3 v_Position;\n' +
+    'void main() {\n' +
+    '  gl_Position = u_MvpMatrix * a_Position;\n' +
+    // Calculate the vertex position in the world coordinate
+    '  v_Position = vec3(u_ModelMatrix * a_Position);\n' +
+    '  v_Normal = normalize(vec3(u_NormalMatrix * a_Normal));\n' +
+    '  v_Color = a_Color;\n' +
+    '}\n';
 
-const f_sharder = `
-    #ifdef GL_ES
-        precision mediump float;
-    #endif
-    
-    varying vec4 v_Color;
-    
-    void main(){
-        gl_FragColor = v_Color;
-    }
-`;
+const f_sharder = '#ifdef GL_ES\n' +
+    'precision mediump float;\n' +
+    '#endif\n' +
+    'uniform vec3 u_LightColor;\n' +     // Light color
+    'uniform vec3 u_LightPosition;\n' +  // Position of the light source
+    'uniform vec3 u_AmbientLight;\n' +   // Ambient light color
+    'varying vec3 v_Normal;\n' +
+    'varying vec3 v_Position;\n' +
+    'varying vec4 v_Color;\n' +
+    'void main() {\n' +
+    // Normalize the normal because it is interpolated and not 1.0 in length any more
+    '  vec3 normal = normalize(v_Normal);\n' +
+    // Calculate the light direction and make its length 1.
+    '  vec3 lightDirection = normalize(u_LightPosition - v_Position);\n' +
+    // The dot product of the light direction and the orientation of a surface (the normal)
+    '  float nDotL = max(dot(lightDirection, normal), 0.0);\n' +
+    // Calculate the final color from diffuse reflection and ambient reflection
+    '  vec3 diffuse = u_LightColor * v_Color.rgb * nDotL;\n' +
+    '  vec3 ambient = u_AmbientLight * v_Color.rgb;\n' +
+    '  gl_FragColor = vec4(diffuse + ambient, v_Color.a);\n' +
+    '}\n';
 
 
 export default function main() {
@@ -69,35 +76,39 @@ function draw(gl, n) {
  */
 function initUniformBuffers(gl, glProgram, canvas) {
     const u_MvpMatrix = gl.getUniformLocation(glProgram, 'u_MvpMatrix');
+    const u_ModelMatrix = gl.getUniformLocation(glProgram, 'u_ModelMatrix');
     const u_NormalMatrix = gl.getUniformLocation(glProgram, 'u_NormalMatrix');
     const u_LightColor = gl.getUniformLocation(glProgram, 'u_LightColor');
-    const u_LightDirection = gl.getUniformLocation(glProgram, 'u_LightDirection');
+    const u_LightPosition = gl.getUniformLocation(glProgram, 'u_LightPosition');
     const u_AmbientLight = gl.getUniformLocation(glProgram, 'u_AmbientLight');
 
-    if (!u_MvpMatrix || !u_LightColor || !u_LightDirection) {
+    if (!u_MvpMatrix || !u_LightColor || !u_LightPosition) {
         throw new Error('Failed to get the storage location');
     }
 
     // 设置光照颜色
     gl.uniform3f(u_LightColor, 1.0, 1.0, 1.0);
 
-    // 设置归一化后的光照方向矢量
-    gl.uniform3fv(u_LightDirection, GlMatrix.getVec3ByNormalize([0.0, 3.0, 4.0]));
+    // 设置点光照位置
+    gl.uniform3f(u_LightPosition, 2.3, 4.0, 3.5);
 
     // 环境光颜色
     gl.uniform3f(u_AmbientLight, 0.2, 0.2, 0.2);
 
     // 设置转变法向量的矩阵
-    const mMatrix = GlMatrix.mutiplyMat4(GlMatrix.getTranslateMat4([0, 0.9, 0]), GlMatrix.getRotationMat4(90, [0, 0, 1]));
+    // const mMatrix = GlMatrix.mutiplyMat4(GlMatrix.getTranslateMat4([0, 0.9, 0]), GlMatrix.getRotationMat4(90, [0, 0, 1]));
+    const mMatrix = GlMatrix.getRotationMat4(90, [0, 1, 0]);
     gl.uniformMatrix4fv(u_NormalMatrix, false, GlMatrix.getInvertTransposeMat4(mMatrix));
+
+    // 设置模型矩阵
+    gl.uniformMatrix4fv(u_ModelMatrix, false, mMatrix);
 
     // 设置mvp矩阵
     const pMatrix = GlMatrix.getPerspectiveMatrix(30, canvas.width/canvas.height, 1, 100);
-    const vMatrix = GlMatrix.getLookAtMatrix([3, 3, 7], [0, 0, 0], [0, 1, 0]);
+    // const vMatrix = GlMatrix.getLookAtMatrix([6, 6, 14], [0, 0, 0], [0, 1, 0]);
+    const vMatrix = new Matrix4().lookAt(6, 6, 14, 0, 0, 0, 0, 1, 0).elements;
     const mvpMatrix = GlMatrix.mutiplyMat4(GlMatrix.mutiplyMat4(pMatrix, vMatrix), mMatrix);
     gl.uniformMatrix4fv(u_MvpMatrix, false, mvpMatrix);
-
-
 }
 
 function initVertexBuffers(gl, glProgram) {

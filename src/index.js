@@ -5,6 +5,8 @@ import LookAtTrianglesWithKeys from './LookAtTrianglesWithKeys';
 import testOrtho from './testOrtho';
 import drawCube from './drawCube';
 import drawLightedCube from './drawLightedCube';
+import drawPointLightedCube from './drawPointLightedCube';
+import drawPointLightedCube_preFragment from './drawPointLightedCube_preFragment';
 
 
 // --------------------
@@ -16,4 +18,6 @@ import drawLightedCube from './drawLightedCube';
 // LookAtTrianglesWithKeys();
 // testOrtho();
 // drawCube();
-drawLightedCube();
+// drawLightedCube();
+// drawPointLightedCube();
+drawPointLightedCube_preFragment();
