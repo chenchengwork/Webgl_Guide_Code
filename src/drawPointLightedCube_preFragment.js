@@ -1,48 +1,59 @@
 /**
- * 绘制带有点光照的cube
+ * 绘制带有点光照，逐片元光照的cube
  */
 
 import GL_Util from './myCore/GL_Util';
 import GlMatrix from './myCore/GlMatrix';
-import {Matrix4} from './core/cuon-matrix';
-const v_sharder = 'attribute vec4 a_Position;\n' +
-    'attribute vec4 a_Color;\n' +
-    'attribute vec4 a_Normal;\n' +
-    'uniform mat4 u_MvpMatrix;\n' +
-    'uniform mat4 u_ModelMatrix;\n' +    // Model matrix
-    'uniform mat4 u_NormalMatrix;\n' +   // Transformation matrix of the normal
-    'varying vec4 v_Color;\n' +
-    'varying vec3 v_Normal;\n' +
-    'varying vec3 v_Position;\n' +
-    'void main() {\n' +
-    '  gl_Position = u_MvpMatrix * a_Position;\n' +
-    // Calculate the vertex position in the world coordinate
-    '  v_Position = vec3(u_ModelMatrix * a_Position);\n' +
-    '  v_Normal = normalize(vec3(u_NormalMatrix * a_Normal));\n' +
-    '  v_Color = a_Color;\n' +
-    '}\n';
 
-const f_sharder = '#ifdef GL_ES\n' +
-    'precision mediump float;\n' +
-    '#endif\n' +
-    'uniform vec3 u_LightColor;\n' +     // Light color
-    'uniform vec3 u_LightPosition;\n' +  // Position of the light source
-    'uniform vec3 u_AmbientLight;\n' +   // Ambient light color
-    'varying vec3 v_Normal;\n' +
-    'varying vec3 v_Position;\n' +
-    'varying vec4 v_Color;\n' +
-    'void main() {\n' +
-    // Normalize the normal because it is interpolated and not 1.0 in length any more
-    '  vec3 normal = normalize(v_Normal);\n' +
-    // Calculate the light direction and make its length 1.
-    '  vec3 lightDirection = normalize(u_LightPosition - v_Position);\n' +
-    // The dot product of the light direction and the orientation of a surface (the normal)
-    '  float nDotL = max(dot(lightDirection, normal), 0.0);\n' +
-    // Calculate the final color from diffuse reflection and ambient reflection
-    '  vec3 diffuse = u_LightColor * v_Color.rgb * nDotL;\n' +
-    '  vec3 ambient = u_AmbientLight * v_Color.rgb;\n' +
-    '  gl_FragColor = vec4(diffuse + ambient, v_Color.a);\n' +
-    '}\n';
+const v_sharder = `
+    // 1. 准备顶点
+    attribute vec4 a_Position;  // 顶点的位置
+    attribute vec4 a_Color;     // 顶点的颜色
+    attribute vec4 a_Normal;    // 顶点的法向量
+    
+    // 2. 准备操作矩阵
+    uniform mat4 u_MvpMatrix;   // mvp矩阵
+    uniform mat4 u_ModelMatrix; // 模型矩阵
+    uniform mat4 u_NormalMatrix;    // 基于模型矩阵，得到的逆转置矩阵，用于获取模型变换后的法向量
+    
+    
+    // 3. 差值顶点数据
+    varying vec3 v_Position;
+    varying vec4 v_Color;
+    varying vec3 v_Normal;
+    
+    void main(){
+        gl_Position = u_MvpMatrix * a_Position;
+        
+        v_Position = vec3(u_ModelMatrix * a_Position);
+        v_Color = a_Color;
+        v_Normal = normalize(vec3(u_NormalMatrix * a_Normal));
+    }
+`;
+
+const f_sharder = `
+    #ifdef GL_ES
+        precision mediump float;
+    #endif
+    
+    uniform vec3 u_LightPosition;   // 光照的位置
+    uniform vec3 u_LightColor;      // 光照的颜色
+    uniform vec3 u_AmbientLight;    // 环境的颜色
+    
+    varying vec3 v_Position;
+    varying vec4 v_Color;
+    varying vec3 v_Normal;
+    
+    void main(){
+        vec3 lightDirection = normalize(u_LightPosition - v_Position);
+        float nDotL = max(dot(lightDirection, normalize(v_Normal)), 0.0);
+        vec3 diffuse = u_LightColor * v_Color.rgb * nDotL;
+        vec3 ambient = u_AmbientLight * v_Color.rgb;
+        
+        gl_FragColor = vec4(diffuse + ambient, v_Color.a);
+    }
+`;
+
 
 
 export default function main() {
@@ -50,7 +61,6 @@ export default function main() {
     const canvas = gl_util.canvas;
     const gl = gl_util.getWebGLContext();
     const glProgram = gl_util.getGlProgram(gl, v_sharder, f_sharder);
-
     const n = initVertexBuffers(gl, glProgram);
 
     initUniformBuffers(gl, glProgram, canvas);
@@ -105,8 +115,7 @@ function initUniformBuffers(gl, glProgram, canvas) {
 
     // 设置mvp矩阵
     const pMatrix = GlMatrix.getPerspectiveMatrix(30, canvas.width/canvas.height, 1, 100);
-    // const vMatrix = GlMatrix.getLookAtMatrix([6, 6, 14], [0, 0, 0], [0, 1, 0]);
-    const vMatrix = new Matrix4().lookAt(6, 6, 14, 0, 0, 0, 0, 1, 0).elements;
+    const vMatrix = GlMatrix.getLookAtMatrix([6, 6, 14], [0, 0, 0], [0, 1, 0]);
     const mvpMatrix = GlMatrix.mutiplyMat4(GlMatrix.mutiplyMat4(pMatrix, vMatrix), mMatrix);
     gl.uniformMatrix4fv(u_MvpMatrix, false, mvpMatrix);
 }
@@ -121,12 +130,12 @@ function initVertexBuffers(gl, glProgram) {
     //  |/      |/
     //  v2------v3
     var vertices = new Float32Array([   // Coordinates
-        1.0, 1.0, 1.0,  -1.0, 1.0, 1.0,  -1.0,-1.0, 1.0,   1.0,-1.0, 1.0, // v0-v1-v2-v3 front
-        1.0, 1.0, 1.0,   1.0,-1.0, 1.0,   1.0,-1.0,-1.0,   1.0, 1.0,-1.0, // v0-v3-v4-v5 right
-        1.0, 1.0, 1.0,   1.0, 1.0,-1.0,  -1.0, 1.0,-1.0,  -1.0, 1.0, 1.0, // v0-v5-v6-v1 up
-        -1.0, 1.0, 1.0,  -1.0, 1.0,-1.0,  -1.0,-1.0,-1.0,  -1.0,-1.0, 1.0, // v1-v6-v7-v2 left
-        -1.0,-1.0,-1.0,   1.0,-1.0,-1.0,   1.0,-1.0, 1.0,  -1.0,-1.0, 1.0, // v7-v4-v3-v2 down
-        1.0,-1.0,-1.0,  -1.0,-1.0,-1.0,  -1.0, 1.0,-1.0,   1.0, 1.0,-1.0  // v4-v7-v6-v5 back
+        2.0, 2.0, 2.0,  -2.0, 2.0, 2.0,  -2.0,-2.0, 2.0,   2.0,-2.0, 2.0, // v0-v1-v2-v3 front
+        2.0, 2.0, 2.0,   2.0,-2.0, 2.0,   2.0,-2.0,-2.0,   2.0, 2.0,-2.0, // v0-v3-v4-v5 right
+        2.0, 2.0, 2.0,   2.0, 2.0,-2.0,  -2.0, 2.0,-2.0,  -2.0, 2.0, 2.0, // v0-v5-v6-v1 up
+        -2.0, 2.0, 2.0,  -2.0, 2.0,-2.0,  -2.0,-2.0,-2.0,  -2.0,-2.0, 2.0, // v1-v6-v7-v2 left
+        -2.0,-2.0,-2.0,   2.0,-2.0,-2.0,   2.0,-2.0, 2.0,  -2.0,-2.0, 2.0, // v7-v4-v3-v2 down
+        2.0,-2.0,-2.0,  -2.0,-2.0,-2.0,  -2.0, 2.0,-2.0,   2.0, 2.0,-2.0  // v4-v7-v6-v5 back
     ]);
 
 

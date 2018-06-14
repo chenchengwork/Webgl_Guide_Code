@@ -106,7 +106,8 @@ function initUniformBuffers(gl, glProgram, canvas) {
     gl.uniform3f(u_AmbientLight, 0.2, 0.2, 0.2);
 
     // 设置转变法向量的矩阵
-    const mMatrix = GlMatrix.mutiplyMat4(GlMatrix.getTranslateMat4([0, 0.9, 0]), GlMatrix.getRotationMat4(90, [0, 0, 1]));
+    // const mMatrix = GlMatrix.mutiplyMat4(GlMatrix.getTranslateMat4([0, 0.9, 0]), GlMatrix.getRotationMat4(90, [0, 0, 1]));
+    const mMatrix = GlMatrix.getRotationMat4(90, [0, 0, 1]);
     gl.uniformMatrix4fv(u_NormalMatrix, false, GlMatrix.getInvertTransposeMat4(mMatrix));
 
     // 设置模型矩阵
@@ -114,7 +115,7 @@ function initUniformBuffers(gl, glProgram, canvas) {
 
     // 设置mvp矩阵
     const pMatrix = GlMatrix.getPerspectiveMatrix(30, canvas.width/canvas.height, 1, 100);
-    const vMatrix = GlMatrix.getLookAtMatrix([3, 3, 7], [0, 0, 0], [0, 1, 0]);
+    const vMatrix = GlMatrix.getLookAtMatrix([6, 6, 14], [0, 0, 0], [0, 1, 0]);
     const mvpMatrix = GlMatrix.mutiplyMat4(GlMatrix.mutiplyMat4(pMatrix, vMatrix), mMatrix);
     gl.uniformMatrix4fv(u_MvpMatrix, false, mvpMatrix);
 
@@ -131,12 +132,12 @@ function initVertexBuffers(gl, glProgram) {
     //  |/      |/
     //  v2------v3
     var vertices = new Float32Array([   // Coordinates
-        1.0, 1.0, 1.0,  -1.0, 1.0, 1.0,  -1.0,-1.0, 1.0,   1.0,-1.0, 1.0, // v0-v1-v2-v3 front
-        1.0, 1.0, 1.0,   1.0,-1.0, 1.0,   1.0,-1.0,-1.0,   1.0, 1.0,-1.0, // v0-v3-v4-v5 right
-        1.0, 1.0, 1.0,   1.0, 1.0,-1.0,  -1.0, 1.0,-1.0,  -1.0, 1.0, 1.0, // v0-v5-v6-v1 up
-        -1.0, 1.0, 1.0,  -1.0, 1.0,-1.0,  -1.0,-1.0,-1.0,  -1.0,-1.0, 1.0, // v1-v6-v7-v2 left
-        -1.0,-1.0,-1.0,   1.0,-1.0,-1.0,   1.0,-1.0, 1.0,  -1.0,-1.0, 1.0, // v7-v4-v3-v2 down
-        1.0,-1.0,-1.0,  -1.0,-1.0,-1.0,  -1.0, 1.0,-1.0,   1.0, 1.0,-1.0  // v4-v7-v6-v5 back
+        2.0, 2.0, 2.0,  -2.0, 2.0, 2.0,  -2.0,-2.0, 2.0,   2.0,-2.0, 2.0, // v0-v1-v2-v3 front
+        2.0, 2.0, 2.0,   2.0,-2.0, 2.0,   2.0,-2.0,-2.0,   2.0, 2.0,-2.0, // v0-v3-v4-v5 right
+        2.0, 2.0, 2.0,   2.0, 2.0,-2.0,  -2.0, 2.0,-2.0,  -2.0, 2.0, 2.0, // v0-v5-v6-v1 up
+        -2.0, 2.0, 2.0,  -2.0, 2.0,-2.0,  -2.0,-2.0,-2.0,  -2.0,-2.0, 2.0, // v1-v6-v7-v2 left
+        -2.0,-2.0,-2.0,   2.0,-2.0,-2.0,   2.0,-2.0, 2.0,  -2.0,-2.0, 2.0, // v7-v4-v3-v2 down
+        2.0,-2.0,-2.0,  -2.0,-2.0,-2.0,  -2.0, 2.0,-2.0,   2.0, 2.0,-2.0  // v4-v7-v6-v5 back
     ]);
 
 
