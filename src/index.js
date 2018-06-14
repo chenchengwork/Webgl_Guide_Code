@@ -4,6 +4,7 @@ import texture from './texture';
 import LookAtTrianglesWithKeys from './LookAtTrianglesWithKeys';
 import testOrtho from './testOrtho';
 import drawCube from './drawCube';
+import drawLightedCube from './drawLightedCube';
 
 
 // --------------------
@@ -14,4 +15,5 @@ import drawCube from './drawCube';
 // texture();
 // LookAtTrianglesWithKeys();
 // testOrtho();
-drawCube();
+// drawCube();
+drawLightedCube();

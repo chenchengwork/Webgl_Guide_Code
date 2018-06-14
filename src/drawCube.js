@@ -47,9 +47,9 @@ export default function main() {
     // 指定清除canvas的颜色
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
 
-    // 开启隐藏面消除，物体遮挡将不会被绘制出来
+    // 开启深度检测，隐藏面消除，物体遮挡将不会被绘制出来
     gl.enable(gl.DEPTH_TEST);
-    // Clear color and depth buffer
+    // 清除颜色和深度缓冲区
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     // Draw the cube

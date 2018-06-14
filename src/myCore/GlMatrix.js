@@ -50,6 +50,71 @@ export default class GlMatrix {
         return outMatrix;
     }
 
+    /**
+     * mat4矩阵相乘
+     * @param {mat4} a
+     * @param {mat4} b
+     * @returns {mat4}
+     */
+    static mutiplyMat4 (a, b) {
+        const resMat4 = glMatrix.mat4.create();
+        glMatrix.mat4.mul(resMat4, a, b);
+
+        return resMat4;
+    }
+
+    /**
+     * 获取逆矩阵
+     * @param {mat4} a
+     * @returns {mat4}
+     */
+    static getInvertMat4(a) {
+        const invertMat4 = glMatrix.mat4.create();
+        glMatrix.mat4.invert(invertMat4, a);
+        return invertMat4;
+    }
+
+    /**
+     * 获取转置矩阵
+     * @param {mat4} a
+     * @returns {mat4}
+     */
+    static getTransposeMat4(a){
+        const transposeMat4 = glMatrix.mat4.create();
+        glMatrix.mat4.invert(transposeMat4, a);
+        return transposeMat4;
+    }
+
+    /**
+     * 获取逆转置矩阵
+     * @param {mat4} a
+     * @returns {mat4}
+     */
+    static getInvertTransposeMat4(a) {
+        return GlMatrix.getTransposeMat4(GlMatrix.getInvertMat4(a));
+    }
+
+
+    /**
+     * 获取vec3矢量
+     * @param {Array} vec3
+     * @returns {vec3}
+     */
+    static getVec3(vec3 = []) {
+        return glMatrix.vec3.fromValues(...vec3);
+    }
+
+    /**
+     * 获取vec3归一化矢量
+     * @param {Array} vec3
+     * @returns {vec3}
+     */
+    static getVec3ByNormalize(vec3 = []) {
+        const normalizeVec3 = glMatrix.vec3.create();
+        glMatrix.vec3.normalize(normalizeVec3, glMatrix.vec3.fromValues(...vec3));
+
+        return normalizeVec3;
+    }
 
 }
 
