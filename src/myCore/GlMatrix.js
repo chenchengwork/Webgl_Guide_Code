@@ -117,6 +117,17 @@ export default class GlMatrix {
         return resMat4;
     }
 
+    /**
+     * 获取缩放矩阵
+     * @param {Array} vec3
+     * @returns {mat4}
+     */
+    static getScaleMat4(vec3 = []){
+        const resMat4 = glMatrix.mat4.create();
+        glMatrix.mat4.fromScaling(resMat4, glMatrix.vec3.fromValues(...vec3));
+        return resMat4;
+    }
+
 
     /**
      * 获取vec3矢量

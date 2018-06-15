@@ -146,13 +146,13 @@ function doDraw(gl, glProgram) {
         var arm1Length = 10.0; // Length of arm1
         // g_modelMatrix.setTranslate(0.0, -12.0, 0.0);
         g_modelMatrix.rotate(g_arm1Angle, 0.0, 1.0, 0.0);    // Rotate around the y-axis
-        const translateMatrix = GlMatrix.getTranslateMat4([0.0, -12.0, 0.0]);
-        const rotateMatrix = GlMatrix.getRotationMat4(g_arm1Angle, [0.0, 1.0, 0.0]); // 绕y轴旋转
+        const translateMatrix1 = GlMatrix.getTranslateMat4([0.0, -12.0, 0.0]);
+        const rotateMatrix1 = GlMatrix.getRotationMat4(g_arm1Angle, [0.0, 1.0, 0.0]); // 绕y轴旋转
 
         // Arm2
-        GlMatrix.getTranslateMat4([0.0, arm1Length, 0.0]); 　　　// Move to joint1
-        GlMatrix.getRotationMat4(g_joint1Angle, [0.0, 0.0, 1.0]);  // Rotate around the z-axis
-        g_modelMatrix.scale(1.3, 1.0, 1.3); // Make it a little thicker
+        const translateMatrix2 = GlMatrix.getTranslateMat4([0.0, arm1Length, 0.0]); 　　　// Move to joint1
+        const rotateMatrix2 = GlMatrix.getRotationMat4(g_joint1Angle, [0.0, 0.0, 1.0]);  // Rotate around the z-axis
+        const scaleMatrix2 = GlMatrix.getScaleMat4([1.3, 1.0, 1.3]);                     // Make it a little thicker
 
     }
 }
