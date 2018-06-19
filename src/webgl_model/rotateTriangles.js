@@ -1,9 +1,9 @@
 import {
 	getWebGLContext,
 	initShaders
-} from './core/cuon-utils';
+} from '../core/cuon-utils';
 
-import { Matrix4 } from './core/cuon-matrix';
+import { Matrix4 } from '../core/cuon-matrix';
 
 var VSHADER_SOURCE =`
     attribute vec4 a_Position;

@@ -6,7 +6,7 @@
 import {
 	getWebGLContext,
 	initShaders
-} from './core/cuon-utils';
+} from '../core/cuon-utils';
 
 
 const VSHADER_SOURCE = `

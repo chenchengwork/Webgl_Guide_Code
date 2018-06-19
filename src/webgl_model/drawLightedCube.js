@@ -1,33 +1,27 @@
 /**
- * 绘制带有点光照，逐片元光照的cube
+ * 绘制带有平行光照的cube
  */
 
-import GL_Util from './myCore/GL_Util';
-import GlMatrix from './myCore/GlMatrix';
-
+import GL_Util from '../myCore/GL_Util';
+import GlMatrix from '../myCore/GlMatrix';
 const v_sharder = `
-    // 1. 准备顶点
-    attribute vec4 a_Position;  // 顶点的位置
-    attribute vec4 a_Color;     // 顶点的颜色
-    attribute vec4 a_Normal;    // 顶点的法向量
-    
-    // 2. 准备操作矩阵
-    uniform mat4 u_MvpMatrix;   // mvp矩阵
-    uniform mat4 u_ModelMatrix; // 模型矩阵
-    uniform mat4 u_NormalMatrix;    // 基于模型矩阵，得到的逆转置矩阵，用于获取模型变换后的法向量
-    
-    
-    // 3. 差值顶点数据
-    varying vec3 v_Position;
+    attribute vec4 a_Position;
+    attribute vec4 a_Color;
+    attribute vec4 a_Normal;
+    uniform mat4 u_MvpMatrix;
+    uniform mat4 u_NormalMatrix;    // 转变法向量的矩阵
+    uniform vec3 u_LightColor;
+    uniform vec3 u_AmbientLight;
+    uniform vec3 u_LightDirection;
     varying vec4 v_Color;
-    varying vec3 v_Normal;
     
     void main(){
         gl_Position = u_MvpMatrix * a_Position;
-        
-        v_Position = vec3(u_ModelMatrix * a_Position);
-        v_Color = a_Color;
-        v_Normal = normalize(vec3(u_NormalMatrix * a_Normal));
+        vec3 normal = normalize(vec3(u_NormalMatrix * a_Normal));
+        float nDotL = max(dot(u_LightDirection, normal), 0.0);
+        vec3 diffuse = u_LightColor * a_Color.rgb * nDotL;
+        vec3 ambient = u_AmbientLight * a_Color.rgb;
+        v_Color = vec4(diffuse + ambient, a_Color.a);
     }
 `;
 
@@ -36,24 +30,12 @@ const f_sharder = `
         precision mediump float;
     #endif
     
-    uniform vec3 u_LightPosition;   // 光照的位置
-    uniform vec3 u_LightColor;      // 光照的颜色
-    uniform vec3 u_AmbientLight;    // 环境的颜色
-    
-    varying vec3 v_Position;
     varying vec4 v_Color;
-    varying vec3 v_Normal;
     
     void main(){
-        vec3 lightDirection = normalize(u_LightPosition - v_Position);
-        float nDotL = max(dot(lightDirection, normalize(v_Normal)), 0.0);
-        vec3 diffuse = u_LightColor * v_Color.rgb * nDotL;
-        vec3 ambient = u_AmbientLight * v_Color.rgb;
-        
-        gl_FragColor = vec4(diffuse + ambient, v_Color.a);
+        gl_FragColor = v_Color;
     }
 `;
-
 
 
 export default function main() {
@@ -61,6 +43,7 @@ export default function main() {
     const canvas = gl_util.canvas;
     const gl = gl_util.getWebGLContext();
     const glProgram = gl_util.getGlProgram(gl, v_sharder, f_sharder);
+
     const n = initVertexBuffers(gl, glProgram);
 
     initUniformBuffers(gl, glProgram, canvas);
@@ -86,38 +69,35 @@ function draw(gl, n) {
  */
 function initUniformBuffers(gl, glProgram, canvas) {
     const u_MvpMatrix = gl.getUniformLocation(glProgram, 'u_MvpMatrix');
-    const u_ModelMatrix = gl.getUniformLocation(glProgram, 'u_ModelMatrix');
     const u_NormalMatrix = gl.getUniformLocation(glProgram, 'u_NormalMatrix');
     const u_LightColor = gl.getUniformLocation(glProgram, 'u_LightColor');
-    const u_LightPosition = gl.getUniformLocation(glProgram, 'u_LightPosition');
+    const u_LightDirection = gl.getUniformLocation(glProgram, 'u_LightDirection');
     const u_AmbientLight = gl.getUniformLocation(glProgram, 'u_AmbientLight');
 
-    if (!u_MvpMatrix || !u_LightColor || !u_LightPosition) {
+    if (!u_MvpMatrix || !u_LightColor || !u_LightDirection) {
         throw new Error('Failed to get the storage location');
     }
 
     // 设置光照颜色
     gl.uniform3f(u_LightColor, 1.0, 1.0, 1.0);
 
-    // 设置点光照位置
-    gl.uniform3f(u_LightPosition, 2.3, 4.0, 3.5);
+    // 设置归一化后的光照方向矢量
+    gl.uniform3fv(u_LightDirection, GlMatrix.getVec3ByNormalize([0.0, 3.0, 4.0]));
 
     // 环境光颜色
     gl.uniform3f(u_AmbientLight, 0.2, 0.2, 0.2);
 
     // 设置转变法向量的矩阵
-    // const mMatrix = GlMatrix.mutiplyMat4(GlMatrix.getTranslateMat4([0, 0.9, 0]), GlMatrix.getRotationMat4(90, [0, 0, 1]));
-    const mMatrix = GlMatrix.getRotationMat4(90, [0, 1, 0]);
+    const mMatrix = GlMatrix.mutiplyMat4(GlMatrix.getTranslateMat4([0, 0.9, 0]), GlMatrix.getRotationMat4(90, [0, 0, 1]));
     gl.uniformMatrix4fv(u_NormalMatrix, false, GlMatrix.getInvertTransposeMat4(mMatrix));
-
-    // 设置模型矩阵
-    gl.uniformMatrix4fv(u_ModelMatrix, false, mMatrix);
 
     // 设置mvp矩阵
     const pMatrix = GlMatrix.getPerspectiveMatrix(30, canvas.width/canvas.height, 1, 100);
-    const vMatrix = GlMatrix.getLookAtMatrix([6, 6, 14], [0, 0, 0], [0, 1, 0]);
+    const vMatrix = GlMatrix.getLookAtMatrix([3, 3, 7], [0, 0, 0], [0, 1, 0]);
     const mvpMatrix = GlMatrix.mutiplyMat4(GlMatrix.mutiplyMat4(pMatrix, vMatrix), mMatrix);
     gl.uniformMatrix4fv(u_MvpMatrix, false, mvpMatrix);
+
+
 }
 
 function initVertexBuffers(gl, glProgram) {
@@ -130,12 +110,12 @@ function initVertexBuffers(gl, glProgram) {
     //  |/      |/
     //  v2------v3
     var vertices = new Float32Array([   // Coordinates
-        2.0, 2.0, 2.0,  -2.0, 2.0, 2.0,  -2.0,-2.0, 2.0,   2.0,-2.0, 2.0, // v0-v1-v2-v3 front
-        2.0, 2.0, 2.0,   2.0,-2.0, 2.0,   2.0,-2.0,-2.0,   2.0, 2.0,-2.0, // v0-v3-v4-v5 right
-        2.0, 2.0, 2.0,   2.0, 2.0,-2.0,  -2.0, 2.0,-2.0,  -2.0, 2.0, 2.0, // v0-v5-v6-v1 up
-        -2.0, 2.0, 2.0,  -2.0, 2.0,-2.0,  -2.0,-2.0,-2.0,  -2.0,-2.0, 2.0, // v1-v6-v7-v2 left
-        -2.0,-2.0,-2.0,   2.0,-2.0,-2.0,   2.0,-2.0, 2.0,  -2.0,-2.0, 2.0, // v7-v4-v3-v2 down
-        2.0,-2.0,-2.0,  -2.0,-2.0,-2.0,  -2.0, 2.0,-2.0,   2.0, 2.0,-2.0  // v4-v7-v6-v5 back
+        1.0, 1.0, 1.0,  -1.0, 1.0, 1.0,  -1.0,-1.0, 1.0,   1.0,-1.0, 1.0, // v0-v1-v2-v3 front
+        1.0, 1.0, 1.0,   1.0,-1.0, 1.0,   1.0,-1.0,-1.0,   1.0, 1.0,-1.0, // v0-v3-v4-v5 right
+        1.0, 1.0, 1.0,   1.0, 1.0,-1.0,  -1.0, 1.0,-1.0,  -1.0, 1.0, 1.0, // v0-v5-v6-v1 up
+        -1.0, 1.0, 1.0,  -1.0, 1.0,-1.0,  -1.0,-1.0,-1.0,  -1.0,-1.0, 1.0, // v1-v6-v7-v2 left
+        -1.0,-1.0,-1.0,   1.0,-1.0,-1.0,   1.0,-1.0, 1.0,  -1.0,-1.0, 1.0, // v7-v4-v3-v2 down
+        1.0,-1.0,-1.0,  -1.0,-1.0,-1.0,  -1.0, 1.0,-1.0,   1.0, 1.0,-1.0  // v4-v7-v6-v5 back
     ]);
 
 

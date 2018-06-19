@@ -1,8 +1,8 @@
 /**
  * 创建3D Cube
  */
-import GL_Util from './myCore/GL_Util';
-import GlMatrix from './myCore/GlMatrix';
+import GL_Util from '../myCore/GL_Util';
+import GlMatrix from '../myCore/GlMatrix';
 
 
 const v_shader = `

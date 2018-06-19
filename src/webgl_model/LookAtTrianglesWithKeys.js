@@ -1,4 +1,4 @@
-import GL_Util from './myCore/GL_Util';
+import GL_Util from '../myCore/GL_Util';
 
 const VSHADER_SOURCE = `
 	attribute vec4 a_Position;

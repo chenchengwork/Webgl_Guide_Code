@@ -2,8 +2,8 @@
  *  测试正交投影
  */
 
-import GL_Util from './myCore/GL_Util';
-import GlMatrix from './myCore/GlMatrix';
+import GL_Util from '../myCore/GL_Util';
+import GlMatrix from '../myCore/GlMatrix';
 
 const v_sharder = `
     attribute vec4 a_Position;

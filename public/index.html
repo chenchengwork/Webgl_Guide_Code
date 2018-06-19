@@ -10,16 +10,41 @@
 
     <link rel="shortcut icon" href="/favicon.ico" title="Favicon">
     <!--<link rel="stylesheet" type="text/css" href="/public/vendor.css">-->
+    <style>
+        .border{
+            border: 1px solid salmon;
+        }
+
+        .text-center{
+            text-align: center;
+        }
+    </style>
 </head>
 
-<body>
-    <canvas id="webgl" width="400" height="400">
-        Please use a browser that supports "canvas"
-    </canvas>
+<body style="display: flex; justify-content: space-between">
 
-    <script type="text/javascript" src="/config/ENV.js"></script>
-    <script type="text/javascript" src="/public/vendor.js"></script>
-    <script type="text/javascript" src="/public/app.js"></script>
+    <div class="border">
+        <h4 class="text-center">webgl</h4>
+        <canvas id="webgl" width="400" height="400">
+            Please use a browser that supports "canvas"
+        </canvas>
+    </div>
+    <div class="border">
+        <div class="text-center">lightgl</div>
+        <canvas id="lightgl" width="400" height="400">
+            Please use a browser that supports "canvas"
+        </canvas>
+    </div>
+    <div class="border">
+        <div class="text-center">twgl</div>
+        <canvas id="twgl" width="400" height="400">
+            Please use a browser that supports "canvas"
+        </canvas>
+    </div>
+
+<script type="text/javascript" src="/config/ENV.js"></script>
+<script type="text/javascript" src="/public/vendor.js"></script>
+<script type="text/javascript" src="/public/app.js"></script>
 
 </body>
 

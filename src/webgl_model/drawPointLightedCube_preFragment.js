@@ -1,44 +1,33 @@
 /**
- * 绘制带有点光照的cube
+ * 绘制带有点光照，逐片元光照的cube
  */
 
-import GL_Util from './myCore/GL_Util';
-import GlMatrix from './myCore/GlMatrix';
+import GL_Util from '../myCore/GL_Util';
+import GlMatrix from '../myCore/GlMatrix';
+
 const v_sharder = `
-    attribute vec4 a_Position;
-    attribute vec4 a_Color;
-    attribute vec4 a_Normal;
-    uniform mat4 u_MvpMatrix;
-    uniform mat4 u_ModelMatrix;
-    uniform mat4 u_NormalMatrix;    // 转变法向量的矩阵
-    uniform vec3 u_LightColor;
-    uniform vec3 u_AmbientLight;
-    uniform vec3 u_LightPosition;
+    // 1. 准备顶点
+    attribute vec4 a_Position;  // 顶点的位置
+    attribute vec4 a_Color;     // 顶点的颜色
+    attribute vec4 a_Normal;    // 顶点的法向量
+    
+    // 2. 准备操作矩阵
+    uniform mat4 u_MvpMatrix;   // mvp矩阵
+    uniform mat4 u_ModelMatrix; // 模型矩阵
+    uniform mat4 u_NormalMatrix;    // 基于模型矩阵，得到的逆转置矩阵，用于获取模型变换后的法向量
+    
+    
+    // 3. 差值顶点数据
+    varying vec3 v_Position;
     varying vec4 v_Color;
+    varying vec3 v_Normal;
     
     void main(){
         gl_Position = u_MvpMatrix * a_Position;
         
-        // 法向量方向 = 法向量矩阵 * 顶点法向量方向
-        vec3 normal = normalize(vec3(u_NormalMatrix * a_Normal));
-        
-        // 获取顶点的世界坐标系位置
-        vec4 vertexPosition = u_ModelMatrix * a_Position;
-        
-        // 光线方向 = 点光源的位置 - 顶点的位置
-        vec3 lightDirection = normalize(u_LightPosition - vec3(vertexPosition));
-        
-        // 通过光线方向和法向量的“点积”，得到cos(入射角)的值
-        float nDotL = max(dot(lightDirection, normal), 0.0);
-        
-        // 漫反射光颜色 = 光照颜色 * 表面基色 * cos(入射角)
-        vec3 diffuse = u_LightColor * a_Color.rgb * nDotL;
-        
-        // 环境反射光颜色 = 环境光颜色 * 表面基色
-        vec3 ambient = u_AmbientLight * a_Color.rgb;
-        
-        // 最终颜色 = 漫反射光颜色 + 环境反射光颜色
-        v_Color = vec4(diffuse + ambient, a_Color.a);
+        v_Position = vec3(u_ModelMatrix * a_Position);
+        v_Color = a_Color;
+        v_Normal = normalize(vec3(u_NormalMatrix * a_Normal));
     }
 `;
 
@@ -47,12 +36,24 @@ const f_sharder = `
         precision mediump float;
     #endif
     
+    uniform vec3 u_LightPosition;   // 光照的位置
+    uniform vec3 u_LightColor;      // 光照的颜色
+    uniform vec3 u_AmbientLight;    // 环境的颜色
+    
+    varying vec3 v_Position;
     varying vec4 v_Color;
+    varying vec3 v_Normal;
     
     void main(){
-        gl_FragColor = v_Color;
+        vec3 lightDirection = normalize(u_LightPosition - v_Position);
+        float nDotL = max(dot(lightDirection, normalize(v_Normal)), 0.0);
+        vec3 diffuse = u_LightColor * v_Color.rgb * nDotL;
+        vec3 ambient = u_AmbientLight * v_Color.rgb;
+        
+        gl_FragColor = vec4(diffuse + ambient, v_Color.a);
     }
 `;
+
 
 
 export default function main() {
@@ -60,7 +61,6 @@ export default function main() {
     const canvas = gl_util.canvas;
     const gl = gl_util.getWebGLContext();
     const glProgram = gl_util.getGlProgram(gl, v_sharder, f_sharder);
-
     const n = initVertexBuffers(gl, glProgram);
 
     initUniformBuffers(gl, glProgram, canvas);
@@ -107,7 +107,7 @@ function initUniformBuffers(gl, glProgram, canvas) {
 
     // 设置转变法向量的矩阵
     // const mMatrix = GlMatrix.mutiplyMat4(GlMatrix.getTranslateMat4([0, 0.9, 0]), GlMatrix.getRotationMat4(90, [0, 0, 1]));
-    const mMatrix = GlMatrix.getRotationMat4(90, [0, 0, 1]);
+    const mMatrix = GlMatrix.getRotationMat4(90, [0, 1, 0]);
     gl.uniformMatrix4fv(u_NormalMatrix, false, GlMatrix.getInvertTransposeMat4(mMatrix));
 
     // 设置模型矩阵
@@ -118,8 +118,6 @@ function initUniformBuffers(gl, glProgram, canvas) {
     const vMatrix = GlMatrix.getLookAtMatrix([6, 6, 14], [0, 0, 0], [0, 1, 0]);
     const mvpMatrix = GlMatrix.mutiplyMat4(GlMatrix.mutiplyMat4(pMatrix, vMatrix), mMatrix);
     gl.uniformMatrix4fv(u_MvpMatrix, false, mvpMatrix);
-
-
 }
 
 function initVertexBuffers(gl, glProgram) {

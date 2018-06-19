@@ -3,7 +3,7 @@ import skyImg from './img/sky.jpg';
 import {
     getWebGLContext,
     initShaders
-} from './core/cuon-utils';
+} from '../core/cuon-utils';
 
 const VSHADER_SOURCE  = `
     attribute vec4 a_Position;
